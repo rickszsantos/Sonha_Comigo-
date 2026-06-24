@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sonha Comigo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wine-deep: #3D0C1F;
+    --wine-mid: #6B1530;
+    --wine-black: #2A0815;
+    --pink-accent: #E84A6F;
+    --pink-light: #FFD9E0;
+    --off-white: #FFF6F2;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(232,74,111,0.18), transparent 55%),
+      radial-gradient(circle at 85% 15%, rgba(255,217,224,0.10), transparent 45%),
+      linear-gradient(160deg, var(--wine-black) 0%, var(--wine-deep) 45%, var(--wine-mid) 100%);
+    font-family: 'Inter', sans-serif;
+    color: var(--off-white);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow-x:hidden;
+  }
+
+  .phone-shell{
+    width:100%;
+    max-width: 400px;
+    min-height: 100vh;
+    padding: 28px 16px 48px;
+    display:flex;
+    flex-direction:column;
+    gap: 22px;
+    position:relative;
+  }
+
+  /* faint floating hearts ambience */
+  .ambient-heart{
+    position:fixed;
+    color: rgba(255,217,224,0.08);
+    font-size: 38px;
+    pointer-events:none;
+    animation: drift 14s linear infinite;
+    z-index:0;
+  }
+  @keyframes drift{
+    0%{ transform: translateY(110vh) rotate(0deg); opacity:0; }
+    10%{ opacity:1; }
+    90%{ opacity:1; }
+    100%{ transform: translateY(-15vh) rotate(25deg); opacity:0; }
+  }
+
+  /* ---------- PLAYER CARD ---------- */
+  .player-card{
+    background: linear-gradient(165deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015));
+    border: 1px solid rgba(255,217,224,0.14);
+    border-radius: 26px;
+    padding: 18px 18px 22px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+    position:relative;
+    z-index:1;
+  }
+
+  .player-eyebrow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pink-light);
+    opacity:0.65;
+    margin-bottom: 14px;
+  }
+  .player-eyebrow span.dot{
+    width:6px; height:6px; border-radius:50%;
+    background: var(--pink-accent);
+    display:inline-block;
+    margin-right:6px;
+    box-shadow: 0 0 8px var(--pink-accent);
+  }
+
+  .cover-wrap{
+    width:100%;
+    aspect-ratio: 1/1;
+    border-radius: 18px;
+    overflow:hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: var(--wine-black);
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255,217,224,0.06) 0 2px, transparent 2px 14px),
+      linear-gradient(150deg, var(--wine-mid), var(--wine-black));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border: 1px solid rgba(255,217,224,0.15);
+    position:relative;
+  }
+  .cover-wrap::before{
+    content:'📷';
+    font-size:42px;
+    opacity:0.35;
+    position:absolute;
+  }
+  .cover-wrap.has-photo::before,
+  .cover-wrap.has-photo .cover-label{
+    display:none;
+  }
+  .cover-wrap .cover-label{
+    position:absolute;
+    bottom:10px;
+    font-size: 10.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color: var(--pink-light);
+    opacity:0.5;
+  }
+
+  .track-info{
+    margin-top: 16px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .track-text h1{
+    font-family:'Playfair Display', serif;
+    font-weight:600;
+    font-size: 24px;
+    margin:0 0 4px;
+    line-height:1.15;
+    color: var(--off-white);
+  }
+  .track-text p{
+    margin:0;
+    font-size: 13.5px;
+    color: var(--pink-light);
+    opacity:0.75;
+  }
+  .verified-badge{
+    flex-shrink:0;
+    width:22px; height:22px;
+    border-radius:50%;
+    background: var(--pink-accent);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 12px;
+    margin-top:3px;
+  }
+
+  .scrub-row{
+    margin-top:16px;
+  }
+  .scrub-bar{
+    height:4px;
+    border-radius:4px;
+    background: rgba(255,217,224,0.18);
+    overflow:hidden;
+    position:relative;
+  }
+  .scrub-fill{
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width: 38%;
+    background: linear-gradient(90deg, var(--pink-accent), var(--pink-light));
+    border-radius:4px;
+  }
+  .scrub-times{
+    display:flex;
+    justify-content:space-between;
+    font-size: 10.5px;
+    color: var(--pink-light);
+    opacity:0.55;
+    margin-top:6px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .controls-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top: 14px;
+  }
+  .controls-row button{
+    background:none;
+    border:none;
+    color: var(--off-white);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+  }
+  .ctrl-side{ font-size:18px; opacity:0.7; }
+  .ctrl-skip{ font-size:20px; }
+  .play-btn{
+    width:54px; height:54px;
+    border-radius:50%;
+    background: linear-gradient(160deg, var(--pink-accent), #c43359);
+    box-shadow: 0 8px 22px -6px rgba(232,74,111,0.65);
+    font-size:20px;
+    transition: transform 0.15s ease;
+  }
+  .play-btn:active{ transform: scale(0.92); }
+  .ctrl-edge{ font-size:15px; opacity:0.55; }
+
+  /* ---------- ABOUT CARD: CLOTHESLINE CAROUSEL ---------- */
+  .about-card{
+    background: linear-gradient(165deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,217,224,0.12);
+    border-radius: 22px;
+    padding: 20px 0 18px;
+    z-index:1;
+    overflow:hidden;
+  }
+  .about-label{
+    font-size: 11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color: var(--pink-light);
+    opacity:0.55;
+    margin: 0 0 16px 18px;
+  }
+
+  .clothesline-wrap{
+    position:relative;
+    padding-top: 18px;
+    margin-bottom: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .clothesline-wrap::-webkit-scrollbar{ display:none; }
+
+  /* the rope/wire the photos hang from */
+  .clothesline-rope{
+    position:absolute;
+    left:18px; right:18px; top:0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,217,224,0.45) 8%, rgba(255,217,224,0.45) 92%, transparent);
+  }
+  .clothesline-rope::before, .clothesline-rope::after{
+    content:'';
+    position:absolute;
+    top:-3px;
+    width:8px; height:8px;
+    border-radius:50%;
+    background: rgba(255,217,224,0.5);
+  }
+  .clothesline-rope::before{ left:-2px; }
+  .clothesline-rope::after{ right:-2px; }
+
+  .clothesline-track{
+    display:flex;
+    align-items:flex-start;
+    gap: 26px;
+    width: max-content;
+    padding: 0 18px;
+    animation: driftLine 38s linear infinite;
+  }
+  .clothesline-wrap:hover .clothesline-track,
+  .clothesline-wrap:active .clothesline-track{
+    animation-play-state: paused;
+  }
+
+  @keyframes driftLine{
+    from{ transform: translateX(0); }
+    to{ transform: translateX(-50%); }
+  }
+
+  .peg-photo{
+    position:relative;
+    flex-shrink:0;
+    width: 132px;
+    padding-top: 22px;
+  }
+  .peg-photo:nth-child(odd){ transform: rotate(-2.2deg); }
+  .peg-photo:nth-child(even){ transform: rotate(2deg); }
+  .peg-photo:nth-child(3n){ transform: rotate(-1.2deg); }
+
+  /* clothespin */
+  .peg-clip{
+    position:absolute;
+    top: 10px;
+    left:50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 18px;
+    z-index:2;
+  }
+  .peg-clip::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background: linear-gradient(160deg, var(--pink-accent), #a8294a);
+    border-radius: 3px 3px 5px 5px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.35);
+  }
+  .peg-clip::after{
+    content:'';
+    position:absolute;
+    left:50%;
+    top:3px;
+    width:2px; height:8px;
+    background: rgba(255,255,255,0.35);
+    transform: translateX(-50%);
+  }
+
+  .peg-photo-frame{
+    width:100%;
+    aspect-ratio: 4/5;
+    border-radius: 6px;
+    background-color: var(--wine-black);
+    background-image: linear-gradient(150deg, var(--wine-mid), var(--wine-black));
+    background-size: cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    border: 6px solid var(--off-white);
+    box-shadow: 0 10px 22px -8px rgba(0,0,0,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+  .peg-photo-frame::before{
+    content:'📷';
+    font-size: 26px;
+    opacity:0.3;
+  }
+  .peg-photo-frame.has-photo::before{ display:none; }
+
+  .about-caption{
+    padding: 18px 18px 0;
+  }
+  .about-caption p{
+    margin:0;
+    font-size: 14.5px;
+    line-height:1.6;
+    color: rgba(255,246,242,0.88);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .clothesline-track{ animation: none; }
+  }
+
+  /* ---------- INVITE CARD ---------- */
+  .invite-card{
+    background: linear-gradient(165deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015));
+    border: 1px solid rgba(255,217,224,0.14);
+    border-radius: 26px;
+    padding: 30px 20px 36px;
+    text-align:center;
+    position:relative;
+    z-index:1;
+    overflow:hidden;
+  }
+  .invite-card h2{
+    font-family:'Playfair Display', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size: 23px;
+    margin: 0 0 8px;
+    line-height:1.3;
+  }
+  .invite-card .invite-sub{
+    font-size: 13px;
+    color: var(--pink-light);
+    opacity:0.6;
+    margin: 0 0 26px;
+  }
+
+  .invite-buttons{
+    position:relative;
+    height: 100px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 18px;
+  }
+
+  .btn-yes, .btn-no{
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size: 15.5px;
+    border-radius: 999px;
+    padding: 14px 30px;
+    cursor:pointer;
+    border:none;
+    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s ease, padding 0.25s ease, font-size 0.25s ease, left 0.25s cubic-bezier(.34,1.56,.64,1), top 0.25s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  .btn-yes{
+    background: linear-gradient(160deg, var(--pink-accent), #c43359);
+    color: var(--off-white);
+    box-shadow: 0 10px 24px -8px rgba(232,74,111,0.7);
+    position:relative;
+    z-index:2;
+  }
+  .btn-yes:active{ transform: scale(0.94); }
+
+  /* Starts side-by-side in normal flow. Only flips to position:absolute
+     via JS the first time it needs to dodge a click/hover/touch. */
+  .btn-no{
+    background: rgba(255,217,224,0.08);
+    color: var(--pink-light);
+    border: 1px solid rgba(255,217,224,0.35);
+    position:relative;
+  }
+  .btn-no.escaping{
+    position:absolute;
+  }
+
+  .no-caption{
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--pink-light);
+    opacity:0;
+    transition: opacity 0.3s ease;
+    height: 16px;
+  }
+  .no-caption.show{ opacity:0.55; }
+
+  /* ---------- SUCCESS OVERLAY ---------- */
+  .success-overlay{
+    position:fixed;
+    inset:0;
+    background: linear-gradient(165deg, rgba(42,8,21,0.96), rgba(61,12,31,0.97));
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding: 32px;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.5s ease;
+    z-index: 50;
+  }
+  .success-overlay.active{
+    opacity:1;
+    pointer-events:all;
+  }
+  .success-overlay h2{
+    font-family:'Playfair Display', serif;
+    font-size: 30px;
+    font-weight:600;
+    margin: 0 0 10px;
+    color: var(--off-white);
+  }
+  .success-overlay p{
+    font-size: 14.5px;
+    color: var(--pink-light);
+    opacity:0.8;
+    margin:0;
+  }
+  .rising-heart{
+    position:fixed;
+    bottom:-40px;
+    font-size: 22px;
+    color: var(--pink-accent);
+    animation: rise 3.2s ease-in forwards;
+    z-index: 60;
+    pointer-events:none;
+  }
+  @keyframes rise{
+    0%{ transform: translateY(0) translateX(0) scale(0.6) rotate(0deg); opacity:1; }
+    70%{ opacity:1; }
+    100%{ transform: translateY(-100vh) translateX(var(--drift, 0px)) scale(1.1) rotate(20deg); opacity:0; }
+  }
+
+  footer.credit{
+    text-align:center;
+    font-size: 11px;
+    color: var(--pink-light);
+    opacity:0.3;
+    letter-spacing:0.05em;
+    margin-top: 4px;
+    z-index:1;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .ambient-heart, .rising-heart{ animation: none !important; display:none; }
+    .btn-yes, .btn-no{ transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-shell">
+
+  <!-- PLAYER -->
+  <section class="player-card">
+    <div class="player-eyebrow"><span><span class="dot"></span>tocando agora</span><span>♡ favorito</span></div>
+    <div class="cover-wrap" id="coverPhoto">
+      <span class="cover-label">foto do casal aqui</span>
+    </div>
+    <div class="track-info">
+      <div class="track-text">
+        <h1>Sonha Comigo</h1>
+        <p>Você &amp; Eu</p>
+      </div>
+      <div class="verified-badge">✓</div>
+    </div>
+    <div class="scrub-row">
+      <div class="scrub-bar"><div class="scrub-fill"></div></div>
+      <div class="scrub-times"><span>0:42</span><span>3:15</span></div>
+    </div>
+    <div class="controls-row">
+      <button class="ctrl-side" aria-label="aleatório">⤮</button>
+      <button class="ctrl-skip" aria-label="anterior">⏮</button>
+      <button class="play-btn" id="playBtn" aria-label="tocar/pausar">▶</button>
+      <button class="ctrl-skip" aria-label="próxima">⏭</button>
+      <button class="ctrl-edge" aria-label="repetir">⟳</button>
+    </div>
+    <audio id="songAudio" src="audio/musica.mp3" preload="none"></audio>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about-card">
+    <p class="about-label">sobre o casal</p>
+
+    <div class="clothesline-wrap">
+      <div class="clothesline-rope"></div>
+      <div class="clothesline-track" id="clotheslineTrack">
+        <div class="peg-photo">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-1.jpg"></div>
+        </div>
+        <div class="peg-photo">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-2.jpg"></div>
+        </div>
+        <div class="peg-photo">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-3.jpg"></div>
+        </div>
+        <div class="peg-photo">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-4.jpg"></div>
+        </div>
+        <div class="peg-photo">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-5.jpg"></div>
+        </div>
+        <div class="peg-photo">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-6.jpg"></div>
+        </div>
+        <!-- duplicated set so the loop is seamless -->
+        <div class="peg-photo" aria-hidden="true">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-1.jpg"></div>
+        </div>
+        <div class="peg-photo" aria-hidden="true">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-2.jpg"></div>
+        </div>
+        <div class="peg-photo" aria-hidden="true">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-3.jpg"></div>
+        </div>
+        <div class="peg-photo" aria-hidden="true">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-4.jpg"></div>
+        </div>
+        <div class="peg-photo" aria-hidden="true">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-5.jpg"></div>
+        </div>
+        <div class="peg-photo" aria-hidden="true">
+          <div class="peg-clip"></div>
+          <div class="peg-photo-frame" data-photo="img/varal-6.jpg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-caption">
+      <p>Aqui entra a nossa história — como começou, o que a gente já viveu, e por que esse momento importa tanto. Troque este texto pelas suas próprias palavras.</p>
+    </div>
+  </section>
+
+  <!-- INVITE -->
+  <section class="invite-card">
+    <h2>Aceita sair comigo?</h2>
+    <p class="invite-sub">é só uma resposta de cada vez 👀</p>
+
+    <div class="invite-buttons" id="inviteButtons">
+      <button class="btn-yes" id="btnYes">Sim</button>
+      <button class="btn-no" id="btnNo">Não</button>
+    </div>
+
+    <p class="no-caption" id="noCaption"></p>
+  </section>
+
+  <footer class="credit">feito com carinho</footer>
+</div>
+
+<div class="success-overlay" id="successOverlay">
+  <h2>Combinado! 💕</h2>
+  <p>To te esperando aqui fora.</p>
+</div>
+
+<script>
+  // pause the clothesline auto-drift while the user is dragging it manually
+  const clotheslineWrap = document.querySelector('.clothesline-wrap');
+  const clotheslineTrack = document.getElementById('clotheslineTrack');
+  let dragTimeout;
+  function pauseDrift(){
+    clotheslineTrack.style.animationPlayState = 'paused';
+    clearTimeout(dragTimeout);
+    dragTimeout = setTimeout(() => {
+      clotheslineTrack.style.animationPlayState = 'running';
+    }, 2500);
+  }
+  clotheslineWrap.addEventListener('touchstart', pauseDrift, { passive: true });
+  clotheslineWrap.addEventListener('touchmove', pauseDrift, { passive: true });
+  clotheslineWrap.addEventListener('scroll', pauseDrift, { passive: true });
+
+  // auto-detect real photos and swap them in if present
+  function tryLoadBackgroundPhoto(el, src){
+    const img = new Image();
+    img.onload = () => {
+      el.style.backgroundImage = `url('${src}')`;
+      el.classList.add('has-photo');
+    };
+    img.onerror = () => { /* keep placeholder */ };
+    img.src = src;
+  }
+
+  tryLoadBackgroundPhoto(document.getElementById('coverPhoto'), 'img/capa.jpg');
+
+  document.querySelectorAll('.peg-photo-frame[data-photo]').forEach(frame => {
+    tryLoadBackgroundPhoto(frame, frame.dataset.photo);
+  });
+
+  // play/pause controlling the real <audio> element
+  const playBtn = document.getElementById('playBtn');
+  const songAudio = document.getElementById('songAudio');
+  const scrubFill = document.querySelector('.scrub-fill');
+  const scrubTimes = document.querySelectorAll('.scrub-times span');
+
+  function formatTime(sec){
+    if (!isFinite(sec)) return '0:00';
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (songAudio.paused) {
+      songAudio.play().then(() => {
+        playBtn.textContent = '❚❚';
+      }).catch(() => {
+        // No audio file added yet (or browser blocked autoplay) —
+        // still flip the icon so the button feels responsive.
+        playBtn.textContent = playBtn.textContent === '▶' ? '❚❚' : '▶';
+      });
+    } else {
+      songAudio.pause();
+      playBtn.textContent = '▶';
+    }
+  });
+
+  songAudio.addEventListener('ended', () => { playBtn.textContent = '▶'; });
+
+  songAudio.addEventListener('timeupdate', () => {
+    if (songAudio.duration) {
+      const pct = (songAudio.currentTime / songAudio.duration) * 100;
+      scrubFill.style.width = pct + '%';
+      scrubTimes[0].textContent = formatTime(songAudio.currentTime);
+      scrubTimes[1].textContent = formatTime(songAudio.duration);
+    }
+  });
+
+  // ambient floating hearts
+  const heartsAmbient = ['♡','♥'];
+  function spawnAmbient(){
+    const h = document.createElement('div');
+    h.className = 'ambient-heart';
+    h.textContent = heartsAmbient[Math.random() > 0.5 ? 0 : 1];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.animationDuration = (10 + Math.random() * 8) + 's';
+    h.style.fontSize = (22 + Math.random() * 30) + 'px';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 19000);
+  }
+  for (let i = 0; i < 4; i++) setTimeout(spawnAmbient, i * 1800);
+  setInterval(spawnAmbient, 4200);
+
+  // ---- the "Não" runaway button game ----
+  const btnNo = document.getElementById('btnNo');
+  const btnYes = document.getElementById('btnYes');
+  const container = document.getElementById('inviteButtons');
+  const noCaption = document.getElementById('noCaption');
+
+  const captions = [
+    'tenta de novo',
+    'quase!',
+    'essa não escapa fácil',
+    'ele não quer ser clicado',
+    'continua tentando 😏',
+    'tá foge mesmo',
+    'desiste não!'
+  ];
+  let attempts = 0;
+  let yesScale = 1;
+
+  function moveNoButton(){
+    const rect = container.getBoundingClientRect();
+    const btnRect = btnNo.getBoundingClientRect();
+
+    if (!btnNo.classList.contains('escaping')) {
+      btnNo.classList.add('escaping');
+    }
+
+    const maxX = rect.width - btnRect.width - 8;
+    const maxY = rect.height - btnRect.height - 8;
+
+    const randX = Math.random() * maxX;
+    const randY = Math.random() * maxY;
+
+    btnNo.style.left = `${randX}px`;
+    btnNo.style.top = `${randY}px`;
+  }
+
+  function escapeNo(){
+    attempts++;
+    moveNoButton();
+
+    noCaption.textContent = captions[Math.min(attempts - 1, captions.length - 1)];
+    noCaption.classList.add('show');
+
+    if (yesScale < 1.35) {
+      yesScale += 0.035;
+      btnYes.style.transform = `scale(${yesScale})`;
+      btnYes.style.fontSize = (15.5 + (yesScale - 1) * 10) + 'px';
+    }
+  }
+
+  btnNo.addEventListener('mouseenter', escapeNo);
+  btnNo.addEventListener('touchstart', (e) => { e.preventDefault(); escapeNo(); }, { passive: false });
+  btnNo.addEventListener('click', (e) => { e.preventDefault(); escapeNo(); });
+
+  // ---- success state ----
+  const overlay = document.getElementById('successOverlay');
+
+  function launchHeartBurst(){
+    const symbols = ['💕','💗','💖','♡'];
+    for (let i = 0; i < 18; i++){
+      setTimeout(() => {
+        const h = document.createElement('div');
+        h.className = 'rising-heart';
+        h.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        h.style.left = (10 + Math.random() * 80) + 'vw';
+        h.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+        h.style.fontSize = (16 + Math.random() * 20) + 'px';
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 3300);
+      }, i * 90);
+    }
+  }
+
+  btnYes.addEventListener('click', () => {
+    overlay.classList.add('active');
+    launchHeartBurst();
+    setTimeout(launchHeartBurst, 900);
+  });
+</script>
+
+</body>
+</html>
